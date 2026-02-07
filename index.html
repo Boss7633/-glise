@@ -4,44 +4,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Baptiste Authentique de MAN - Version Officielle</title>
+  <title>Baptiste Authentique de MAN - Officiel</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <script>
-    // Configuration d'environnement robuste
     window.process = { env: { NODE_ENV: 'production', API_KEY: '' } };
-    console.log("Application - V2.0.1 Initialisée");
   </script>
 
   <style>
     body { font-family: 'Inter', sans-serif; margin: 0; background: #ffffff; }
     h1, h2, h3, .font-serif { font-family: 'Playfair Display', serif; }
     
-    /* Animation de chargement modernisée */
     @keyframes pulse-ring {
       0% { transform: scale(.33); opacity: 1; }
       80%, 100% { opacity: 0; }
     }
-    @keyframes pulse-dot {
-      0% { transform: scale(.8); }
-      50% { transform: scale(1); }
-      100% { transform: scale(.8); }
-    }
     .loading-pulse {
-      position: relative; width: 80px; height: 80px;
+      position: relative; width: 60px; height: 60px;
     }
     .loading-pulse:before {
-      content: ''; position: absolute; left: -20px; top: -20px; width: 120px; height: 120px;
+      content: ''; position: absolute; left: -15px; top: -15px; width: 90px; height: 90px;
       background-color: #4338ca; border-radius: 50%; opacity: 0.1;
       animation: pulse-ring 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
     }
     .loading-pulse:after {
-      content: ''; position: absolute; left: 0; top: 0; width: 80px; height: 80px;
-      background-color: #4338ca; border-radius: 50%; box-shadow: 0 0 20px rgba(67, 56, 202, 0.4);
-      animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+      content: ''; position: absolute; left: 0; top: 0; width: 60px; height: 60px;
+      background-color: #4338ca; border-radius: 50%; box-shadow: 0 0 15px rgba(67, 56, 202, 0.2);
+    }
+
+    .btn-enter {
+      margin-top: 30px;
+      padding: 12px 32px;
+      background: #4338ca;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 10px 20px -5px rgba(67, 56, 202, 0.4);
+      transition: all 0.3s ease;
+      animation: fadeInUp 0.8s ease backwards 0.5s;
+    }
+    .btn-enter:hover {
+      transform: translateY(-2px);
+      background: #3730a3;
+      box-shadow: 0 15px 25px -5px rgba(67, 56, 202, 0.5);
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 
@@ -62,12 +79,19 @@
 </head>
 <body>
   <div id="root">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #ffffff; color: #1e293b; font-family: 'Inter', sans-serif;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #ffffff;">
       <div class="loading-pulse"></div>
-      <div style="margin-top: 40px; text-align: center;">
-        <h1 style="font-size: 1.5rem; margin-bottom: 8px; color: #4338ca; font-weight: 700;">Bienvenue à Man</h1>
-        <p style="font-size: 0.875rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">Mise à jour du site en cours...</p>
+      <div style="margin-top: 30px; text-align: center;">
+        <h1 style="font-size: 1.25rem; margin-bottom: 4px; color: #1e293b; font-weight: 700; font-family: 'Playfair Display', serif;">Baptiste Authentique de Man</h1>
+        <p style="font-size: 0.75rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">Préparation de votre visite...</p>
       </div>
+      <!-- Bouton de secours si le chargement JS est trop lent -->
+      <button class="btn-enter" onclick="window.location.reload()">
+        Accéder au Site
+      </button>
+      <p style="margin-top: 20px; font-size: 10px; color: #cbd5e1; max-width: 200px; text-align: center; line-height: 1.5;">
+        Si le site ne s'affiche pas, vérifiez votre connexion ou cliquez sur le bouton.
+      </p>
     </div>
   </div>
   <script type="module" src="index.tsx"></script>

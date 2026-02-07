@@ -20,23 +20,16 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Session check in background - No blocker
-    const initAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.user_metadata.full_name || 'Fidèle',
-          });
-        }
-      } catch (e) {
-        console.error("Auth init error:", e);
+    // On initialise l'auth en arrière-plan
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata.full_name || 'Fidèle',
+        });
       }
-    };
-
-    initAuth();
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -51,9 +44,7 @@ const App: React.FC = () => {
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [currentPage]);
 
   const handleLogout = async () => {
@@ -80,7 +71,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-white selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen flex flex-col font-sans bg-white">
       <Navigation 
         currentPage={currentPage} 
         onNavigate={setCurrentPage} 
@@ -93,19 +84,14 @@ const App: React.FC = () => {
       />
       
       <main className="flex-grow pt-16">
-        {/* Bandeau de bienvenue V2 visible par tous */}
-        <div className="bg-indigo-900 text-white overflow-hidden relative">
-          <div className="absolute inset-0 bg-indigo-600/20 translate-x-1/2 -skew-x-12"></div>
-          <div className="max-w-7xl mx-auto py-2 px-6 flex justify-between items-center text-[9px] uppercase tracking-[0.2em] font-bold relative z-10">
+        <div className="bg-indigo-900 text-white relative">
+          <div className="max-w-7xl mx-auto py-2 px-6 flex justify-between items-center text-[9px] uppercase tracking-[0.2em] font-bold">
             <div className="flex items-center gap-3">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-              <span>{lang === 'fr' ? 'Version Web Officielle 2.0.1 - Direct' : 'Official Web Version 2.0.1 - Direct'}</span>
+              <span>Site Officiel de l'Église de Man</span>
             </div>
             {user && (
-              <div className="flex items-center gap-4">
-                <span className="text-amber-400">{lang === 'fr' ? `Compte : ${user.name}` : `Account: ${user.name}`}</span>
-                <button onClick={handleLogout} className="hover:text-amber-400 transition-colors">[{lang === 'fr' ? 'Quitter' : 'Exit'}]</button>
-              </div>
+              <button onClick={handleLogout} className="text-amber-400 hover:underline">{user.name} (Quitter)</button>
             )}
           </div>
         </div>
@@ -113,22 +99,10 @@ const App: React.FC = () => {
         {renderPage()}
       </main>
 
-      <footer className="bg-slate-950 text-white py-16 px-6 border-t border-slate-900">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
-            <div>
-              <h3 className="text-2xl font-serif font-black text-white mb-2 tracking-tighter uppercase italic">Baptiste Authentique</h3>
-              <p className="text-indigo-400 text-xs font-bold tracking-widest uppercase">Étoile de Man, Tonkpi</p>
-            </div>
-            <div className="flex gap-6">
-              <button onClick={() => setCurrentPage(Page.CONTACT)} className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Contact</button>
-              <button onClick={() => setCurrentPage(Page.DONATE)} className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Faire un don</button>
-            </div>
-          </div>
-          <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between text-[10px] text-slate-600 uppercase tracking-widest font-bold">
-            <p>© 2024 Baptiste Authentique de MAN. Tous droits réservés.</p>
-            <p>Conçu pour la gloire de Dieu</p>
-          </div>
+      <footer className="bg-slate-950 text-white py-12 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <h3 className="text-xl font-serif font-bold text-white mb-2 uppercase italic">Baptiste Authentique de MAN</h3>
+          <p className="text-slate-500 text-[10px] tracking-widest uppercase">© 2024 - Quartier Commerce, Man</p>
         </div>
       </footer>
 
