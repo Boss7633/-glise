@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Page } from '../types';
+import { Page, User } from '../types';
 
 interface NavigationProps {
   currentPage: Page;
@@ -9,6 +9,8 @@ interface NavigationProps {
   setIsMenuOpen: (open: boolean) => void;
   lang: 'fr' | 'en';
   setLang: (l: 'fr' | 'en') => void;
+  user: User | null;
+  onLogout: () => void;
 }
 
 const Navigation: React.FC<NavigationProps> = ({ 
@@ -17,7 +19,9 @@ const Navigation: React.FC<NavigationProps> = ({
   isMenuOpen, 
   setIsMenuOpen,
   lang,
-  setLang
+  setLang,
+  user,
+  onLogout
 }) => {
   const menuItems = [
     { id: Page.HOME, label: lang === 'fr' ? 'Accueil' : 'Home' },
@@ -30,17 +34,17 @@ const Navigation: React.FC<NavigationProps> = ({
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-indigo-50">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-indigo-50">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <div 
           className="flex items-center space-x-2 cursor-pointer group" 
           onClick={() => onNavigate(Page.HOME)}
         >
-          <div className="w-10 h-10 bg-indigo-700 rounded-lg flex items-center justify-center text-amber-400 font-bold text-xl transition-transform group-hover:scale-110">
+          <div className="w-9 h-9 bg-indigo-700 rounded-lg flex items-center justify-center text-amber-400 font-bold text-lg transition-transform group-hover:scale-110">
             B
           </div>
-          <span className="font-serif font-bold text-lg md:text-xl text-indigo-900 hidden sm:block">
-            Baptiste Authentique de MAN
+          <span className="font-serif font-bold text-lg text-indigo-900 hidden sm:block">
+            Baptiste Authentique
           </span>
         </div>
 
@@ -58,29 +62,50 @@ const Navigation: React.FC<NavigationProps> = ({
               {item.label}
             </button>
           ))}
-          <div className="ml-4 pl-4 border-l border-slate-200 flex items-center space-x-2">
-            <button 
-              onClick={() => setLang('fr')}
-              className={`text-xs px-2 py-1 rounded ${lang === 'fr' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
-            >
-              FR
-            </button>
-            <button 
-              onClick={() => setLang('en')}
-              className={`text-xs px-2 py-1 rounded ${lang === 'en' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
-            >
-              EN
-            </button>
+          
+          <div className="ml-4 pl-4 border-l border-slate-200 flex items-center space-x-4">
+            <div className="flex items-center space-x-1">
+              <button 
+                onClick={() => setLang('fr')}
+                className={`text-[10px] font-bold px-2 py-1 rounded ${lang === 'fr' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+              >
+                FR
+              </button>
+              <button 
+                onClick={() => setLang('en')}
+                className={`text-[10px] font-bold px-2 py-1 rounded ${lang === 'en' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
+              >
+                EN
+              </button>
+            </div>
+
+            {user ? (
+              <button 
+                onClick={onLogout}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+              >
+                {lang === 'fr' ? 'Déconnexion' : 'Logout'}
+              </button>
+            ) : (
+              <button 
+                onClick={() => onNavigate(Page.LOGIN)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-indigo-200"
+              >
+                {lang === 'fr' ? 'Connexion' : 'Login'}
+              </button>
+            )}
           </div>
         </div>
 
         <div className="lg:hidden flex items-center space-x-4">
-          <button 
-            onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-            className="text-xs font-bold text-indigo-600 px-2 py-1 bg-indigo-50 rounded"
-          >
-            {lang.toUpperCase()}
-          </button>
+          {!user && (
+             <button 
+              onClick={() => onNavigate(Page.LOGIN)}
+              className="text-[10px] font-bold text-white px-3 py-1.5 bg-indigo-600 rounded-full uppercase tracking-widest"
+            >
+              {lang === 'fr' ? 'Connect' : 'Login'}
+            </button>
+          )}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="p-2 text-indigo-900 focus:outline-none"
@@ -97,7 +122,7 @@ const Navigation: React.FC<NavigationProps> = ({
       </div>
 
       {isMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-indigo-50 animate-fade-in-down">
+        <div className="lg:hidden bg-white border-b border-indigo-50 animate-fade-in-down max-h-[80vh] overflow-y-auto">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {menuItems.map((item) => (
               <button
@@ -112,6 +137,14 @@ const Navigation: React.FC<NavigationProps> = ({
                 {item.label}
               </button>
             ))}
+            {user && (
+              <button
+                onClick={onLogout}
+                className="block w-full text-left px-3 py-4 text-rose-600 font-bold border-t border-slate-100 mt-2"
+              >
+                {lang === 'fr' ? 'Déconnexion' : 'Logout'}
+              </button>
+            )}
           </div>
         </div>
       )}

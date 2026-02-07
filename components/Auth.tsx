@@ -5,9 +5,10 @@ import { supabase } from '../services/supabase';
 
 interface AuthProps {
   lang: 'fr' | 'en';
+  onSuccess?: () => void;
 }
 
-const Auth: React.FC<AuthProps> = ({ lang }) => {
+const Auth: React.FC<AuthProps> = ({ lang, onSuccess }) => {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,22 +34,23 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
         });
         if (signUpError) throw signUpError;
         setSuccess(lang === 'fr' 
-          ? "Inscription réussie ! Veuillez cliquer sur le lien envoyé à votre adresse email pour valider votre compte." 
-          : "Registration successful! Please click the link sent to your email to validate your account.");
+          ? "Inscription réussie ! Veuillez cliquer sur le lien envoyé par email." 
+          : "Registration successful! Please check your email.");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
         if (signInError) {
-          // Gestion spécifique de l'email non confirmé
           if (signInError.message.includes('Email not confirmed')) {
             setError(lang === 'fr' 
-              ? "Votre email n'est pas encore confirmé. Veuillez vérifier votre boîte de réception (et vos spams)." 
-              : "Email not confirmed. Please check your inbox and spam folder.");
+              ? "Email non confirmé. Vérifiez vos spams." 
+              : "Email not confirmed. Check your spam.");
           } else {
             throw signInError;
           }
+        } else if (onSuccess) {
+          onSuccess();
         }
       }
     } catch (err: any) {
@@ -59,131 +61,105 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
   };
 
   const handleResendEmail = async () => {
-    if (!email) {
-      setError(lang === 'fr' ? "Entrez d'abord votre email." : "Enter your email first.");
-      return;
-    }
+    if (!email) return;
     setLoading(true);
-    const { error: resendError } = await supabase.auth.resend({
-      type: 'signup',
-      email: email,
-    });
+    await supabase.auth.resend({ type: 'signup', email });
     setLoading(false);
-    if (resendError) {
-      setError(resendError.message);
-    } else {
-      setSuccess(lang === 'fr' ? "Email de confirmation renvoyé !" : "Confirmation email resent!");
-      setError('');
-    }
+    setSuccess(lang === 'fr' ? "Email renvoyé !" : "Email resent!");
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-indigo-950">
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1920&q=80" 
-          alt="Background" 
-          className="w-full h-full object-cover opacity-30"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/80 to-slate-900/90 backdrop-blur-sm"></div>
-      </div>
-
-      <div className="relative z-10 w-full max-w-md animate-fade-in">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-3xl shadow-2xl text-white">
+    <div className="min-h-[80vh] flex items-center justify-center p-6 bg-slate-50">
+      <div className="w-full max-w-md">
+        <div className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-amber-500 rounded-2xl flex items-center justify-center text-indigo-900 font-bold text-3xl mx-auto mb-4 shadow-lg shadow-amber-500/20">
-              B
-            </div>
-            <h1 className="text-3xl font-serif font-bold">
-              Baptiste Authentique de Man
+            <h1 className="text-3xl font-serif font-bold text-indigo-900">
+              {mode === 'login' 
+                ? (lang === 'fr' ? "Bon retour !" : "Welcome back!") 
+                : (lang === 'fr' ? "Rejoignez-nous" : "Join us")}
             </h1>
+            <p className="text-slate-500 mt-2">
+              {mode === 'login' 
+                ? (lang === 'fr' ? "Connectez-vous à votre espace fidèle" : "Sign in to your member area")
+                : (lang === 'fr' ? "Créez votre compte en quelques secondes" : "Create your account in seconds")}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1 ml-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 ml-1">
                   {lang === 'fr' ? "Nom complet" : "Full Name"}
                 </label>
                 <input 
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   placeholder="Jean Kouassi"
                   required
                 />
               </div>
             )}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1 ml-1">
-                Email
-              </label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 ml-1">Email</label>
               <input 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
-                placeholder="email@baptiste-man.ci"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                placeholder="email@exemple.ci"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-indigo-200 mb-1 ml-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1 ml-1">
                 {lang === 'fr' ? "Mot de passe" : "Password"}
               </label>
               <input 
                 type="password" 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 placeholder="••••••••"
                 required
               />
             </div>
 
             {error && (
-              <div className="bg-rose-500/20 border border-rose-500/50 p-4 rounded-xl space-y-3">
-                <p className="text-rose-200 text-sm font-medium leading-snug">{error}</p>
-                {error.includes('Email not confirmed') && (
-                  <button 
-                    type="button"
-                    onClick={handleResendEmail}
-                    className="text-xs font-bold uppercase tracking-widest text-white underline decoration-rose-500 underline-offset-4 hover:text-amber-400 transition-colors"
-                  >
-                    {lang === 'fr' ? "Renvoyer l'email de confirmation" : "Resend confirmation email"}
+              <div className="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                <p className="text-rose-600 text-sm font-medium">{error}</p>
+                {error.includes('confirmed') && (
+                  <button type="button" onClick={handleResendEmail} className="text-xs font-bold text-indigo-600 mt-2 underline">
+                    {lang === 'fr' ? "Renvoyer l'email" : "Resend email"}
                   </button>
                 )}
               </div>
             )}
 
             {success && (
-              <div className="bg-emerald-500/20 border border-emerald-500/50 p-4 rounded-xl">
-                <p className="text-emerald-200 text-sm font-medium">{success}</p>
+              <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                <p className="text-emerald-600 text-sm font-medium">{success}</p>
               </div>
             )}
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-indigo-900 rounded-xl font-bold text-lg shadow-xl disabled:opacity-50 transition-all active:scale-[0.98]"
+              className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-lg shadow-lg disabled:opacity-50 transition-all active:scale-[0.98]"
             >
-              {loading ? '...' : (mode === 'login' ? (lang === 'fr' ? "Se connecter" : "Sign In") : (lang === 'fr' ? "Créer un compte" : "Create Account"))}
+              {loading ? '...' : (mode === 'login' ? (lang === 'fr' ? "Se connecter" : "Sign In") : (lang === 'fr' ? "S'inscrire" : "Register"))}
             </button>
           </form>
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => {
-                setMode(mode === 'login' ? 'register' : 'login');
-                setError('');
-                setSuccess('');
-              }}
-              className="text-indigo-200 hover:text-white text-sm font-medium transition-colors"
+              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+              className="text-slate-500 hover:text-indigo-600 text-sm font-medium transition-colors"
             >
               {mode === 'login' 
-                ? (lang === 'fr' ? "Pas encore de compte ? S'inscrire" : "No account yet? Register")
-                : (lang === 'fr' ? "Déjà un compte ? Se connecter" : "Already have an account? Login")}
+                ? (lang === 'fr' ? "Nouveau ici ? Créer un compte" : "New here? Create account")
+                : (lang === 'fr' ? "Déjà membre ? Se connecter" : "Already a member? Login")}
             </button>
           </div>
         </div>

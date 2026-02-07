@@ -20,10 +20,9 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [newsEmail, setNewsEmail] = useState('');
   const [newsStatus, setNewsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // Check session immediately
+    // Check session non-blockingly
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser({
@@ -32,13 +31,8 @@ const App: React.FC = () => {
           name: session.user.user_metadata.full_name || 'Fidèle',
         });
       }
-      setIsInitializing(false);
-    }).catch(err => {
-      console.error("Supabase Session Error:", err);
-      setIsInitializing(false);
     });
 
-    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({
@@ -46,20 +40,22 @@ const App: React.FC = () => {
           email: session.user.email || '',
           name: session.user.user_metadata.full_name || 'Fidèle',
         });
+        // Si on vient de se connecter, on retourne à l'accueil
+        if (currentPage === Page.LOGIN) setCurrentPage(Page.HOME);
       } else {
         setUser(null);
       }
-      setIsInitializing(false);
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [currentPage]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    setCurrentPage(Page.HOME);
   };
 
   const handleNewsSubmit = async (e: React.FormEvent) => {
@@ -77,22 +73,11 @@ const App: React.FC = () => {
     setTimeout(() => setNewsStatus('idle'), 5000);
   };
 
-  // Skip the spinner if it's taking too long or we already know there's no user
-  if (isInitializing && !user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-4"></div>
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Initialisation...</p>
-      </div>
-    );
-  }
-
-  // If no user, show the Auth page
-  if (!user) {
-    return <Auth lang={lang} />;
-  }
-
   const renderPage = () => {
+    if (currentPage === Page.LOGIN) {
+      return <Auth lang={lang} onSuccess={() => setCurrentPage(Page.HOME)} />;
+    }
+
     switch (currentPage) {
       case Page.HOME: return <Home onNavigate={setCurrentPage} lang={lang} />;
       case Page.ABOUT: return <About lang={lang} />;
@@ -114,13 +99,17 @@ const App: React.FC = () => {
         setIsMenuOpen={setIsMenuOpen}
         lang={lang}
         setLang={setLang}
+        user={user}
+        onLogout={handleLogout}
       />
       
       <main className="flex-grow pt-16">
-        <div className="bg-amber-400 py-1.5 px-6 flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-indigo-900">
-          <span>{lang === 'fr' ? `Fidèle: ${user.name}` : `Member: ${user.name}`}</span>
-          <button onClick={handleLogout} className="hover:underline">{lang === 'fr' ? 'Déconnexion' : 'Logout'}</button>
-        </div>
+        {user && (
+          <div className="bg-amber-400 py-1.5 px-6 flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-indigo-900">
+            <span>{lang === 'fr' ? `Espace Fidèle: ${user.name}` : `Member Area: ${user.name}`}</span>
+            <button onClick={handleLogout} className="hover:underline">{lang === 'fr' ? 'Déconnexion' : 'Logout'}</button>
+          </div>
+        )}
         {renderPage()}
       </main>
 

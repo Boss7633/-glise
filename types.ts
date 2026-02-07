@@ -6,7 +6,8 @@ export enum Page {
   SERMONS = 'sermons',
   GALLERY = 'gallery',
   CONTACT = 'contact',
-  DONATE = 'donate'
+  DONATE = 'donate',
+  LOGIN = 'login'
 }
 
 export interface User {
