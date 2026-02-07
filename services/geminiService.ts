@@ -1,8 +1,27 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+const getApiKey = () => {
+  try {
+    // Tentative d'accès à la variable d'environnement injectée
+    return process.env.API_KEY || "";
+  } catch (e) {
+    // Fallback silencieux si process n'est pas défini
+    return "";
+  }
+};
+
 export const getSpiritualGuidance = async (query: string, language: string = 'fr') => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    console.warn("Gemini API Key missing.");
+    return language === 'fr' 
+      ? "L'assistant IA est en cours de maintenance. Veuillez nous excuser pour ce désagrément." 
+      : "The AI assistant is currently undergoing maintenance. We apologize for the inconvenience.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const model = "gemini-3-flash-preview";
 
   const systemInstruction = language === 'fr' 
@@ -27,7 +46,15 @@ export const getSpiritualGuidance = async (query: string, language: string = 'fr
 };
 
 export const getDailyVerse = async (language: string = 'fr') => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const apiKey = getApiKey();
+  
+  if (!apiKey) {
+    return language === 'fr' 
+      ? "Jean 3:16 - Car Dieu a tant aimé le monde qu'il a donné son Fils unique afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle."
+      : "John 3:16 - For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const model = "gemini-3-flash-preview";
 
   const prompt = language === 'fr'
@@ -45,7 +72,7 @@ export const getDailyVerse = async (language: string = 'fr') => {
     return response.text || "";
   } catch (error) {
     return language === 'fr' 
-      ? "Jean 3:16 - Car Dieu a tant aimé le monde qu'il a donné son Fils unique."
-      : "John 3:16 - For God so loved the world that he gave his one and only Son.";
+      ? "Psaume 23:1 - L'Éternel est mon berger: je ne manquerai de rien."
+      : "Psalm 23:1 - The Lord is my shepherd, I lack nothing.";
   }
 };
