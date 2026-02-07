@@ -20,19 +20,23 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Vérification de la session en arrière-plan sans bloquer l'affichage
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata.full_name || 'Fidèle',
-        });
+    // Session check in background - No blocker
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata.full_name || 'Fidèle',
+          });
+        }
+      } catch (e) {
+        console.error("Auth init error:", e);
       }
     };
 
-    checkSession();
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -76,7 +80,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-white selection:bg-amber-100 selection:text-amber-900">
+    <div className="min-h-screen flex flex-col font-sans bg-white selection:bg-indigo-100 selection:text-indigo-900">
       <Navigation 
         currentPage={currentPage} 
         onNavigate={setCurrentPage} 
@@ -89,19 +93,42 @@ const App: React.FC = () => {
       />
       
       <main className="flex-grow pt-16">
-        {user && (
-          <div className="bg-amber-400 py-1.5 px-6 flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-indigo-900">
-            <span>{lang === 'fr' ? `Espace Fidèle: ${user.name}` : `Member Area: ${user.name}`}</span>
-            <button onClick={handleLogout} className="hover:underline">{lang === 'fr' ? 'Déconnexion' : 'Logout'}</button>
+        {/* Bandeau de bienvenue V2 visible par tous */}
+        <div className="bg-indigo-900 text-white overflow-hidden relative">
+          <div className="absolute inset-0 bg-indigo-600/20 translate-x-1/2 -skew-x-12"></div>
+          <div className="max-w-7xl mx-auto py-2 px-6 flex justify-between items-center text-[9px] uppercase tracking-[0.2em] font-bold relative z-10">
+            <div className="flex items-center gap-3">
+              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
+              <span>{lang === 'fr' ? 'Version Web Officielle 2.0.1 - Direct' : 'Official Web Version 2.0.1 - Direct'}</span>
+            </div>
+            {user && (
+              <div className="flex items-center gap-4">
+                <span className="text-amber-400">{lang === 'fr' ? `Compte : ${user.name}` : `Account: ${user.name}`}</span>
+                <button onClick={handleLogout} className="hover:text-amber-400 transition-colors">[{lang === 'fr' ? 'Quitter' : 'Exit'}]</button>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
         {renderPage()}
       </main>
 
-      <footer className="bg-slate-950 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <h3 className="text-xl font-serif font-bold text-amber-500 mb-4 tracking-wider uppercase">Baptiste Authentique de MAN</h3>
-          <p className="text-slate-500 text-sm italic">© 2024 - Quartier Commerce, Man, Côte d'Ivoire</p>
+      <footer className="bg-slate-950 text-white py-16 px-6 border-t border-slate-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-12">
+            <div>
+              <h3 className="text-2xl font-serif font-black text-white mb-2 tracking-tighter uppercase italic">Baptiste Authentique</h3>
+              <p className="text-indigo-400 text-xs font-bold tracking-widest uppercase">Étoile de Man, Tonkpi</p>
+            </div>
+            <div className="flex gap-6">
+              <button onClick={() => setCurrentPage(Page.CONTACT)} className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Contact</button>
+              <button onClick={() => setCurrentPage(Page.DONATE)} className="text-slate-400 hover:text-white transition-colors text-sm font-medium">Faire un don</button>
+            </div>
+          </div>
+          <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between text-[10px] text-slate-600 uppercase tracking-widest font-bold">
+            <p>© 2024 Baptiste Authentique de MAN. Tous droits réservés.</p>
+            <p>Conçu pour la gloire de Dieu</p>
+          </div>
         </div>
       </footer>
 

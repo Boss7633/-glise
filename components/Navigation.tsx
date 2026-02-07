@@ -25,129 +25,125 @@ const Navigation: React.FC<NavigationProps> = ({
 }) => {
   const menuItems = [
     { id: Page.HOME, label: lang === 'fr' ? 'Accueil' : 'Home' },
-    { id: Page.ABOUT, label: lang === 'fr' ? 'À propos' : 'About' },
-    { id: Page.CALENDAR, label: lang === 'fr' ? 'Calendrier' : 'Calendar' },
-    { id: Page.SERMONS, label: lang === 'fr' ? 'Sermons' : 'Sermons' },
-    { id: Page.GALLERY, label: lang === 'fr' ? 'Galerie' : 'Gallery' },
+    { id: Page.ABOUT, label: lang === 'fr' ? 'Vision' : 'Vision' },
+    { id: Page.CALENDAR, label: lang === 'fr' ? 'Horaires' : 'Schedule' },
+    { id: Page.SERMONS, label: lang === 'fr' ? 'Enseignements' : 'Sermons' },
+    { id: Page.GALLERY, label: lang === 'fr' ? 'Photos' : 'Photos' },
     { id: Page.CONTACT, label: lang === 'fr' ? 'Contact' : 'Contact' },
-    { id: Page.DONATE, label: lang === 'fr' ? 'Dons' : 'Donate' },
+    { id: Page.DONATE, label: lang === 'fr' ? 'Donner' : 'Give' },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-indigo-50">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+    <nav className="fixed top-0 left-0 right-0 z-[100] bg-white border-b border-slate-100 h-16 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
         <div 
-          className="flex items-center space-x-2 cursor-pointer group" 
+          className="flex items-center space-x-3 cursor-pointer group" 
           onClick={() => onNavigate(Page.HOME)}
         >
-          <div className="w-9 h-9 bg-indigo-700 rounded-lg flex items-center justify-center text-amber-400 font-bold text-lg transition-transform group-hover:scale-110">
+          <div className="w-10 h-10 bg-indigo-700 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-200 group-hover:bg-indigo-600 transition-all rotate-3 group-hover:rotate-0">
             B
           </div>
-          <span className="font-serif font-bold text-lg text-indigo-900 hidden sm:block">
-            Baptiste Authentique
-          </span>
+          <div className="flex flex-col">
+            <span className="font-serif font-black text-lg text-slate-900 leading-none">
+              Baptiste Authentique
+            </span>
+            <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-widest mt-0.5">Man, Côte d'Ivoire</span>
+          </div>
         </div>
 
+        {/* Desktop Links */}
         <div className="hidden lg:flex items-center space-x-1">
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.id)}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-all ${
+              onClick={() => {
+                onNavigate(item.id);
+                setIsMenuOpen(false);
+              }}
+              className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${
                 currentPage === item.id 
-                  ? 'text-amber-600 bg-amber-50' 
-                  : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
+                  ? 'text-indigo-600 bg-indigo-50' 
+                  : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-50'
               }`}
             >
               {item.label}
             </button>
           ))}
           
-          <div className="ml-4 pl-4 border-l border-slate-200 flex items-center space-x-4">
-            <div className="flex items-center space-x-1">
-              <button 
-                onClick={() => setLang('fr')}
-                className={`text-[10px] font-bold px-2 py-1 rounded ${lang === 'fr' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
-              >
-                FR
-              </button>
-              <button 
-                onClick={() => setLang('en')}
-                className={`text-[10px] font-bold px-2 py-1 rounded ${lang === 'en' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
-              >
-                EN
-              </button>
-            </div>
-
+          <div className="ml-6 flex items-center space-x-4 pl-6 border-l border-slate-100">
             {user ? (
               <button 
                 onClick={onLogout}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full text-xs font-bold uppercase tracking-wider transition-all"
+                className="px-5 py-2.5 bg-slate-900 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md"
               >
                 {lang === 'fr' ? 'Déconnexion' : 'Logout'}
               </button>
             ) : (
               <button 
                 onClick={() => onNavigate(Page.LOGIN)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-md shadow-indigo-200"
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
               >
-                {lang === 'fr' ? 'Connexion' : 'Login'}
+                {lang === 'fr' ? 'Connexion' : 'Join Us'}
               </button>
             )}
           </div>
         </div>
 
-        <div className="lg:hidden flex items-center space-x-4">
+        {/* Mobile Toggle */}
+        <div className="lg:hidden flex items-center gap-4">
           {!user && (
-             <button 
+            <button 
               onClick={() => onNavigate(Page.LOGIN)}
-              className="text-[10px] font-bold text-white px-3 py-1.5 bg-indigo-600 rounded-full uppercase tracking-widest"
+              className="px-4 py-2 bg-indigo-600 text-white rounded-full text-[9px] font-black uppercase tracking-widest"
             >
-              {lang === 'fr' ? 'Connect' : 'Login'}
+              {lang === 'fr' ? 'Inscrire' : 'Join'}
             </button>
           )}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 text-indigo-900 focus:outline-none"
+            className="p-2 text-slate-900"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              )}
-            </svg>
+            <div className="w-6 flex flex-col gap-1.5 items-end">
+              <span className={`h-0.5 bg-current transition-all ${isMenuOpen ? 'w-6 translate-y-2 rotate-45' : 'w-6'}`}></span>
+              <span className={`h-0.5 bg-current transition-all ${isMenuOpen ? 'opacity-0' : 'w-4'}`}></span>
+              <span className={`h-0.5 bg-current transition-all ${isMenuOpen ? 'w-6 -translate-y-2 -rotate-45' : 'w-5'}`}></span>
+            </div>
           </button>
         </div>
       </div>
 
-      {isMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-indigo-50 animate-fade-in-down max-h-[80vh] overflow-y-auto">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {menuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onNavigate(item.id)}
-                className={`block w-full text-left px-3 py-4 rounded-md text-base font-medium ${
-                  currentPage === item.id 
-                    ? 'text-amber-600 bg-amber-50' 
-                    : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-            {user && (
-              <button
-                onClick={onLogout}
-                className="block w-full text-left px-3 py-4 text-rose-600 font-bold border-t border-slate-100 mt-2"
-              >
-                {lang === 'fr' ? 'Déconnexion' : 'Logout'}
-              </button>
-            )}
-          </div>
+      {/* Mobile Menu Overlay */}
+      <div className={`fixed inset-0 top-16 bg-white z-[90] lg:hidden transition-all duration-500 transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex flex-col p-8 space-y-4">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                onNavigate(item.id);
+                setIsMenuOpen(false);
+              }}
+              className={`w-full text-left py-4 px-6 rounded-2xl text-lg font-bold transition-all ${
+                currentPage === item.id 
+                  ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' 
+                  : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+          {user && (
+            <button
+              onClick={() => {
+                onLogout();
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-left py-4 px-6 rounded-2xl text-rose-600 font-bold border-2 border-rose-50 mt-4"
+            >
+              {lang === 'fr' ? 'Déconnexion' : 'Sign Out'}
+            </button>
+          )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };
