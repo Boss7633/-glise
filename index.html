@@ -11,7 +11,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
   <script>
+    // Initialisation globale
     window.process = { env: { NODE_ENV: 'production', API_KEY: '' } };
+    console.log("HTML - Phase de chargement initiale");
   </script>
 
   <style>
@@ -37,28 +39,26 @@
 
     .btn-enter {
       margin-top: 30px;
-      padding: 12px 32px;
+      padding: 14px 40px;
       background: #4338ca;
       color: white;
       border: none;
       border-radius: 50px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
-      box-shadow: 0 10px 20px -5px rgba(67, 56, 202, 0.4);
-      transition: all 0.3s ease;
-      animation: fadeInUp 0.8s ease backwards 0.5s;
+      box-shadow: 0 10px 25px -5px rgba(67, 56, 202, 0.4);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-enter:hover {
-      transform: translateY(-2px);
+      transform: translateY(-3px);
       background: #3730a3;
-      box-shadow: 0 15px 25px -5px rgba(67, 56, 202, 0.5);
+      box-shadow: 0 20px 30px -5px rgba(67, 56, 202, 0.5);
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    .btn-enter:active {
+      transform: translateY(-1px);
     }
   </style>
 
@@ -79,18 +79,20 @@
 </head>
 <body>
   <div id="root">
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #ffffff;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #ffffff; text-align: center; padding: 20px;">
       <div class="loading-pulse"></div>
-      <div style="margin-top: 30px; text-align: center;">
-        <h1 style="font-size: 1.25rem; margin-bottom: 4px; color: #1e293b; font-weight: 700; font-family: 'Playfair Display', serif;">Baptiste Authentique de Man</h1>
-        <p style="font-size: 0.75rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">Préparation de votre visite...</p>
+      <div style="margin-top: 30px;">
+        <h1 style="font-size: 1.5rem; margin-bottom: 8px; color: #1e293b; font-weight: 800; font-family: 'Playfair Display', serif;">Eglise Baptiste Authentique</h1>
+        <p style="font-size: 0.85rem; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 600;">Chargement des ressources spirituelles...</p>
       </div>
-      <!-- Bouton de secours si le chargement JS est trop lent -->
+      
+      <!-- Bouton d'accès manuel -->
       <button class="btn-enter" onclick="window.location.reload()">
-        Accéder au Site
+        Accéder au Site Directement
       </button>
-      <p style="margin-top: 20px; font-size: 10px; color: #cbd5e1; max-width: 200px; text-align: center; line-height: 1.5;">
-        Si le site ne s'affiche pas, vérifiez votre connexion ou cliquez sur le bouton.
+
+      <p style="margin-top: 30px; font-size: 11px; color: #94a3b8; max-width: 250px; line-height: 1.6;">
+        Si la page ne s'affiche pas automatiquement après 5 secondes, cliquez sur le bouton ci-dessus.
       </p>
     </div>
   </div>

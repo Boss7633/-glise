@@ -3,11 +3,15 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 
-console.log("React Bootloader Start");
+console.log("🚀 Lancement de l'application Baptiste Authentique...");
 
-const container = document.getElementById('root');
+const startApp = () => {
+  const container = document.getElementById('root');
+  if (!container) {
+    console.error("❌ Erreur critique : Élément #root introuvable");
+    return;
+  }
 
-if (container) {
   try {
     const root = createRoot(container);
     root.render(
@@ -15,17 +19,20 @@ if (container) {
         <App />
       </React.StrictMode>
     );
-    console.log("React Application Mounted Successfully");
-  } catch (err) {
-    console.error("React Mounting Failed:", err);
+    console.log("✅ Application montée avec succès sur le DOM");
+  } catch (error) {
+    console.error("❌ Échec du rendu React :", error);
     container.innerHTML = `
-      <div style="padding: 40px; text-align: center; font-family: sans-serif; color: #4338ca;">
-        <h1>Erreur de Démarrage</h1>
-        <p>Une erreur est survenue lors de l'initialisation de l'application.</p>
-        <button onclick="window.location.reload()" style="padding: 12px 24px; background: #4338ca; color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px;">Réessayer</button>
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; padding: 20px; text-align: center;">
+        <h1 style="color: #ef4444;">Erreur de Chargement</h1>
+        <p style="color: #64748b;">Le site n'a pas pu démarrer correctement.</p>
+        <button onclick="window.location.reload()" style="margin-top: 20px; padding: 12px 24px; background: #4338ca; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+          Réessayer la connexion
+        </button>
       </div>
     `;
   }
-} else {
-  console.error("Root element not found in DOM");
-}
+};
+
+// Exécution immédiate
+startApp();
