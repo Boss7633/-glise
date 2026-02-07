@@ -1,0 +1,9 @@
+{
+  "name": "Baptiste Authentique de MAN",
+  "description": "Un site vitrine moderne et spirituel pour la communauté Baptiste Authentique de Man, offrant des ressources, un calendrier d'événements et un assistant spirituel alimenté par l'IA.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
