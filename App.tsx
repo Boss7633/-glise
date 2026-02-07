@@ -18,12 +18,11 @@ const App: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [lang, setLang] = useState<'fr' | 'en'>('fr');
   const [user, setUser] = useState<User | null>(null);
-  const [newsEmail, setNewsEmail] = useState('');
-  const [newsStatus, setNewsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
-    // Check session non-blockingly
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Vérification de la session en arrière-plan sans bloquer l'affichage
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -31,7 +30,9 @@ const App: React.FC = () => {
           name: session.user.user_metadata.full_name || 'Fidèle',
         });
       }
-    });
+    };
+
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
@@ -40,7 +41,6 @@ const App: React.FC = () => {
           email: session.user.email || '',
           name: session.user.user_metadata.full_name || 'Fidèle',
         });
-        // Si on vient de se connecter, on retourne à l'accueil
         if (currentPage === Page.LOGIN) setCurrentPage(Page.HOME);
       } else {
         setUser(null);
@@ -56,21 +56,6 @@ const App: React.FC = () => {
     await supabase.auth.signOut();
     setUser(null);
     setCurrentPage(Page.HOME);
-  };
-
-  const handleNewsSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newsEmail) return;
-    setNewsStatus('loading');
-    try {
-      const { error } = await supabase.from('newsletter_subscriptions').insert([{ email: newsEmail }]);
-      if (error) throw error;
-      setNewsStatus('success');
-      setNewsEmail('');
-    } catch (err) {
-      setNewsStatus('error');
-    }
-    setTimeout(() => setNewsStatus('idle'), 5000);
   };
 
   const renderPage = () => {
