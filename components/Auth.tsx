@@ -13,11 +13,13 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
@@ -26,24 +28,52 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
           email,
           password,
           options: {
-            data: {
-              full_name: name,
-            }
+            data: { full_name: name }
           }
         });
         if (signUpError) throw signUpError;
-        alert(lang === 'fr' ? "Vérifiez votre email pour confirmer l'inscription !" : "Check your email to confirm registration!");
+        setSuccess(lang === 'fr' 
+          ? "Inscription réussie ! Veuillez cliquer sur le lien envoyé à votre adresse email pour valider votre compte." 
+          : "Registration successful! Please click the link sent to your email to validate your account.");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        if (signInError) throw signInError;
+        if (signInError) {
+          // Gestion spécifique de l'email non confirmé
+          if (signInError.message.includes('Email not confirmed')) {
+            setError(lang === 'fr' 
+              ? "Votre email n'est pas encore confirmé. Veuillez vérifier votre boîte de réception (et vos spams)." 
+              : "Email not confirmed. Please check your inbox and spam folder.");
+          } else {
+            throw signInError;
+          }
+        }
       }
     } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!email) {
+      setError(lang === 'fr' ? "Entrez d'abord votre email." : "Enter your email first.");
+      return;
+    }
+    setLoading(true);
+    const { error: resendError } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+    setLoading(false);
+    if (resendError) {
+      setError(resendError.message);
+    } else {
+      setSuccess(lang === 'fr' ? "Email de confirmation renvoyé !" : "Confirmation email resent!");
+      setError('');
     }
   };
 
@@ -113,15 +143,30 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
             </div>
 
             {error && (
-              <div className="text-rose-400 text-xs font-bold bg-rose-400/10 p-2 rounded-lg text-center">
-                {error}
+              <div className="bg-rose-500/20 border border-rose-500/50 p-4 rounded-xl space-y-3">
+                <p className="text-rose-200 text-sm font-medium leading-snug">{error}</p>
+                {error.includes('Email not confirmed') && (
+                  <button 
+                    type="button"
+                    onClick={handleResendEmail}
+                    className="text-xs font-bold uppercase tracking-widest text-white underline decoration-rose-500 underline-offset-4 hover:text-amber-400 transition-colors"
+                  >
+                    {lang === 'fr' ? "Renvoyer l'email de confirmation" : "Resend confirmation email"}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {success && (
+              <div className="bg-emerald-500/20 border border-emerald-500/50 p-4 rounded-xl">
+                <p className="text-emerald-200 text-sm font-medium">{success}</p>
               </div>
             )}
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-indigo-900 rounded-xl font-bold text-lg shadow-xl disabled:opacity-50"
+              className="w-full py-4 bg-amber-500 hover:bg-amber-600 text-indigo-900 rounded-xl font-bold text-lg shadow-xl disabled:opacity-50 transition-all active:scale-[0.98]"
             >
               {loading ? '...' : (mode === 'login' ? (lang === 'fr' ? "Se connecter" : "Sign In") : (lang === 'fr' ? "Créer un compte" : "Create Account"))}
             </button>
@@ -129,8 +174,12 @@ const Auth: React.FC<AuthProps> = ({ lang }) => {
 
           <div className="mt-8 text-center">
             <button 
-              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-              className="text-indigo-200 hover:text-white text-sm font-medium"
+              onClick={() => {
+                setMode(mode === 'login' ? 'register' : 'login');
+                setError('');
+                setSuccess('');
+              }}
+              className="text-indigo-200 hover:text-white text-sm font-medium transition-colors"
             >
               {mode === 'login' 
                 ? (lang === 'fr' ? "Pas encore de compte ? S'inscrire" : "No account yet? Register")
