@@ -20,18 +20,28 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [newsEmail, setNewsEmail] = useState('');
   const [newsStatus, setNewsStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
-    // Vérifier la session actuelle au chargement
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          name: session.user.user_metadata.full_name || 'Fidèle',
-        });
+    const initAuth = async () => {
+      try {
+        // Vérifier la session actuelle
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata.full_name || 'Fidèle',
+          });
+        }
+      } catch (err) {
+        console.error("Erreur initialisation Auth:", err);
+      } finally {
+        setIsAuthReady(true);
       }
-    });
+    };
+
+    initAuth();
 
     // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -46,7 +56,9 @@ const App: React.FC = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -64,18 +76,30 @@ const App: React.FC = () => {
     if (!newsEmail) return;
     
     setNewsStatus('loading');
-    const { error } = await supabase
-      .from('newsletter_subscriptions')
-      .insert([{ email: newsEmail }]);
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert([{ email: newsEmail }]);
 
-    if (error) {
-      setNewsStatus('error');
-    } else {
+      if (error) throw error;
       setNewsStatus('success');
       setNewsEmail('');
+    } catch (err) {
+      setNewsStatus('error');
     }
     setTimeout(() => setNewsStatus('idle'), 5000);
   };
+
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-indigo-950 text-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-amber-500 rounded-xl mb-4"></div>
+          <p className="text-sm font-bold tracking-widest uppercase">Connexion au temple...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) {
     return <Auth lang={lang} />;
@@ -192,7 +216,6 @@ const App: React.FC = () => {
           <div>
             <h4 className="font-bold text-lg mb-6 text-slate-200">Social</h4>
             <div className="flex space-x-4">
-               {/* Icon placeholders */}
                <div className="w-8 h-8 rounded-full bg-slate-800"></div>
                <div className="w-8 h-8 rounded-full bg-slate-800"></div>
             </div>
