@@ -14,12 +14,19 @@
     // Configuration globale immédiate
     window.process = { env: { NODE_ENV: 'production', API_KEY: '' } };
     
-    window.onerror = (m) => {
-      console.error("Erreur critique:", m);
-      if (m.includes('importmap')) {
-        location.reload();
+    // Catch errors during script loading
+    window.addEventListener('error', function(e) {
+      console.error("Global Error:", e.message, "at", e.filename, ":", e.lineno);
+      const root = document.getElementById('root');
+      if (root && root.innerHTML.includes('Temple')) {
+        root.innerHTML = `
+          <div style="padding: 20px; text-align: center; font-family: sans-serif; color: #4338ca;">
+            <p>Une erreur est survenue lors du chargement de l'application.</p>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 10px 20px; background: #4338ca; color: white; border: none; border-radius: 8px; cursor: pointer;">Réessayer</button>
+          </div>
+        `;
       }
-    };
+    });
   </script>
 
   <style>

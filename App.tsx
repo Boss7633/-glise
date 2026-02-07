@@ -23,29 +23,22 @@ const App: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    // On essaie de récupérer la session mais on ne bloque pas plus de 1.5s
-    const initTimer = setTimeout(() => setIsInitializing(false), 1500);
-
-    const checkUser = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.user_metadata.full_name || 'Fidèle',
-          });
-        }
-      } catch (e) {
-        console.error("Auth check failed", e);
-      } finally {
-        setIsInitializing(false);
-        clearTimeout(initTimer);
+    // Check session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          id: session.user.id,
+          email: session.user.email || '',
+          name: session.user.user_metadata.full_name || 'Fidèle',
+        });
       }
-    };
+      setIsInitializing(false);
+    }).catch(err => {
+      console.error("Supabase Session Error:", err);
+      setIsInitializing(false);
+    });
 
-    checkUser();
-
+    // Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({
@@ -61,7 +54,6 @@ const App: React.FC = () => {
 
     return () => {
       subscription.unsubscribe();
-      clearTimeout(initTimer);
     };
   }, []);
 
@@ -85,16 +77,17 @@ const App: React.FC = () => {
     setTimeout(() => setNewsStatus('idle'), 5000);
   };
 
-  // On affiche un chargement très bref
+  // Skip the spinner if it's taking too long or we already know there's no user
   if (isInitializing && !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-4"></div>
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Initialisation...</p>
       </div>
     );
   }
 
-  // Si pas d'utilisateur après l'init, on montre Auth
+  // If no user, show the Auth page
   if (!user) {
     return <Auth lang={lang} />;
   }

@@ -6,9 +6,13 @@ import App from './App';
 const container = document.getElementById('root');
 
 if (container) {
-  const root = createRoot(container);
-  // Suppression de StrictMode pour une initialisation plus directe de Supabase
-  root.render(<App />);
+  try {
+    const root = createRoot(container);
+    root.render(<App />);
+  } catch (error) {
+    console.error("Failed to render React application:", error);
+    container.innerHTML = `<div style="padding: 20px; text-align: center;">Erreur critique au démarrage.</div>`;
+  }
 } else {
   console.error("Le conteneur 'root' est introuvable.");
 }
