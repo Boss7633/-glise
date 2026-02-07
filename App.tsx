@@ -23,10 +23,19 @@ const App: React.FC = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
 
   useEffect(() => {
+    // Timeout de sécurité : si après 4 secondes rien ne se passe, on débloque l'interface
+    const safetyTimeout = setTimeout(() => {
+      if (!isAuthReady) {
+        console.warn("Auth init timeout reached - forcing ready state");
+        setIsAuthReady(true);
+      }
+    }, 4000);
+
     const initAuth = async () => {
       try {
-        // Vérifier la session actuelle
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
         if (session?.user) {
           setUser({
             id: session.user.id,
@@ -38,12 +47,12 @@ const App: React.FC = () => {
         console.error("Erreur initialisation Auth:", err);
       } finally {
         setIsAuthReady(true);
+        clearTimeout(safetyTimeout);
       }
     };
 
     initAuth();
 
-    // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({
@@ -57,6 +66,7 @@ const App: React.FC = () => {
     });
 
     return () => {
+      clearTimeout(safetyTimeout);
       if (subscription) subscription.unsubscribe();
     };
   }, []);
@@ -90,17 +100,19 @@ const App: React.FC = () => {
     setTimeout(() => setNewsStatus('idle'), 5000);
   };
 
+  // Affichage du chargement initial
   if (!isAuthReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-indigo-950 text-white">
-        <div className="animate-pulse flex flex-col items-center">
-          <div className="w-12 h-12 bg-amber-500 rounded-xl mb-4"></div>
-          <p className="text-sm font-bold tracking-widest uppercase">Connexion au temple...</p>
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mb-6"></div>
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-amber-200/60 animate-pulse">Connexion au temple...</p>
         </div>
       </div>
     );
   }
 
+  // Si pas d'utilisateur, on force l'écran d'Auth
   if (!user) {
     return <Auth lang={lang} />;
   }
