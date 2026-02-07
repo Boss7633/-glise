@@ -7,11 +7,8 @@ const container = document.getElementById('root');
 
 if (container) {
   const root = createRoot(container);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+  // Suppression de StrictMode pour une initialisation plus directe de Supabase
+  root.render(<App />);
 } else {
   console.error("Le conteneur 'root' est introuvable.");
 }
